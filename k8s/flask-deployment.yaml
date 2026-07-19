@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: flask-app
+  labels:
+    app: flask
+spec:
+  replicas: 3
+
+  strategy:
+    type: RollingUpdate
+
+  selector:
+    matchLabels:
+      app: flask
+
+  template:
+    metadata:
+      labels:
+        app: flask
+
+    spec:
+      containers:
+      - name: flask
+        image: flask-redis:v3
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 5000
+
+        env:
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: flask-config
+              key: REDIS_HOST
+
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: flask-config
+              key: REDIS_PORT
+
+        - name: APP_ENV
+          valueFrom:
+            secretKeyRef:
+              name: flask-secret
+              key: APP_ENV
+
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+
+        livenessProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+
+        readinessProbe:
+          tcpSocket:
+            port: 5000
+          initialDelaySeconds: 10
+          periodSeconds: 5

@@ -1,0 +1,96 @@
+# ============================================
+# Flask Application Configuration
+# ============================================
+
+flask:
+  replicaCount: 3
+
+  image:
+    repository: flask-redis
+    tag: v3
+    pullPolicy: Never
+
+  service:
+    type: NodePort
+    port: 80
+    targetPort: 5000
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "512Mi"
+
+  livenessProbe:
+    initialDelaySeconds: 20
+    periodSeconds: 10
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 5
+
+
+# ============================================
+# Redis Configuration
+# ============================================
+
+redis:
+  replicaCount: 1
+
+  image:
+    repository: redis
+    tag: "7-alpine"
+    pullPolicy: IfNotPresent
+
+  service:
+    type: ClusterIP
+    port: 6379
+
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "250m"
+      memory: "256Mi"
+
+
+# ============================================
+# Application Configuration
+# ============================================
+
+config:
+  redisHost: redis-service
+  redisPort: "6379"
+
+
+# ============================================
+# Application Secret
+# ============================================
+
+secret:
+  appEnv: production
+
+
+# ============================================
+# Redis Persistent Storage
+# ============================================
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+
+# ============================================
+# Ingress Configuration
+# ============================================
+
+ingress:
+  enabled: true
+  className: nginx
+  host: flask-helm.local
+  path: /
+  pathType: Prefix

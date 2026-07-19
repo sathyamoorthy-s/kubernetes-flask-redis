@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+spec:
+  replicas: {{ .Values.flask.replicaCount }}
+
+  strategy:
+    type: RollingUpdate
+
+  selector:
+    matchLabels:
+      app: flask
+
+  template:
+    metadata:
+      labels:
+        app: flask
+
+    spec:
+      containers:
+        - name: flask
+          image: "{{ .Values.flask.image.repository }}:{{ .Values.flask.image.tag }}"
+          imagePullPolicy: {{ .Values.flask.image.pullPolicy }}
+
+          ports:
+            - containerPort: 5000
+
+          env:
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: flask-config
+                  key: REDIS_HOST
+
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: flask-config
+                  key: REDIS_PORT
+
+            - name: APP_ENV
+              valueFrom:
+                secretKeyRef:
+                  name: flask-secret
+                  key: APP_ENV
+
+          resources:
+            requests:
+              cpu: {{ .Values.flask.resources.requests.cpu | quote }}
+              memory: {{ .Values.flask.resources.requests.memory | quote }}
+            limits:
+              cpu: {{ .Values.flask.resources.limits.cpu | quote }}
+              memory: {{ .Values.flask.resources.limits.memory | quote }}
+
+          livenessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: {{ .Values.flask.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.flask.livenessProbe.periodSeconds }}
+
+          readinessProbe:
+            tcpSocket:
+              port: 5000
+            initialDelaySeconds: {{ .Values.flask.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.flask.readinessProbe.periodSeconds }}
