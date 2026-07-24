@@ -69,10 +69,11 @@ An NGINX Ingress resource was also configured for host-based routing. In the loc
 ```text
 kubernetes-flask-redis/
 │
-├── app.py
+├── app/
+│   ├── app.py
+│   └── requirements.txt
 ├── Dockerfile
 ├── docker-compose.yml
-├── requirements.txt
 ├── README.md
 │
 ├── k8s/
